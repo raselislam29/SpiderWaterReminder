@@ -34,6 +34,15 @@ let overlayWindows = [];
 let state = null;
 let scheduler = null;
 
+/** Auto-dismiss the reminder if it is left untouched. */
+const OVERLAY_AUTO_DISMISS_MS = 20000;
+/** Must match the climb-out animation in renderer/overlay/styles.css. */
+const OVERLAY_LEAVE_MS = 1100;
+
+let autoDismissTimer = null;
+let leaveTimer = null;
+let isDismissing = false;
+
 const ASSETS = path.join(__dirname, '..', 'assets');
 
 function asset(...parts) {
@@ -41,6 +50,10 @@ function asset(...parts) {
 }
 
 function destroyOverlayWindows() {
+  // Windows are rebuilt when monitors change; pending timers would fire at
+  // windows that no longer exist.
+  clearOverlayTimers();
+  isDismissing = false;
   for (const win of overlayWindows) {
     if (win && !win.isDestroyed()) win.destroy();
   }
@@ -236,7 +249,41 @@ function whenOverlayReady(win) {
   });
 }
 
+function clearOverlayTimers() {
+  if (autoDismissTimer != null) {
+    clearTimeout(autoDismissTimer);
+    autoDismissTimer = null;
+  }
+  if (leaveTimer != null) {
+    clearTimeout(leaveTimer);
+    leaveTimer = null;
+  }
+}
+
+/**
+ * Dismissal is driven from here rather than per-window so every monitor runs
+ * the exit at the same moment. A click on one screen, Escape, and the
+ * auto-dismiss timeout all funnel through this.
+ */
+function beginOverlayDismiss() {
+  if (isDismissing) return;
+  const windows = overlayWindows.filter((win) => win && !win.isDestroyed());
+  if (!windows.length) return;
+
+  isDismissing = true;
+  clearOverlayTimers();
+
+  for (const win of windows) {
+    win.webContents.send('overlay:leave');
+  }
+
+  // Hide only once every screen has finished climbing out.
+  leaveTimer = setTimeout(hideOverlay, OVERLAY_LEAVE_MS);
+}
+
 async function showOverlay(message) {
+  clearOverlayTimers();
+  isDismissing = false;
   if (!overlayWindows.length) createOverlayWindows();
   if (popupWindow && popupWindow.isVisible()) popupWindow.hide();
 
@@ -267,6 +314,11 @@ async function showOverlay(message) {
     if (!win.isDestroyed()) win.webContents.send('overlay:show', payload);
   }
 
+  // Counted from the shared start instant, so the 20s is the same on every
+  // monitor no matter when each window finished loading.
+  const untilStart = Math.max(0, payload.startAt - Date.now());
+  autoDismissTimer = setTimeout(beginOverlayDismiss, untilStart + OVERLAY_AUTO_DISMISS_MS);
+
   // Focus the overlay on the monitor with the cursor.
   const cursorDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const focusIndex = Math.max(
@@ -277,13 +329,15 @@ async function showOverlay(message) {
   if (focusWin && !focusWin.isDestroyed()) focusWin.focus();
 
   try {
-    globalShortcut.register('Escape', hideOverlay);
+    globalShortcut.register('Escape', beginOverlayDismiss);
   } catch {
     // already registered
   }
 }
 
 function hideOverlay() {
+  clearOverlayTimers();
+  isDismissing = false;
   try {
     globalShortcut.unregister('Escape');
   } catch {
@@ -342,7 +396,7 @@ function registerIpc() {
     return true;
   });
 
-  ipcMain.on('overlay:dismiss', () => hideOverlay());
+  ipcMain.on('overlay:dismiss', () => beginOverlayDismiss());
 }
 
 if (gotLock) {

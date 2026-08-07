@@ -2,28 +2,29 @@ const stage = document.getElementById('stage');
 const cardMsg = document.getElementById('cardMsg');
 
 let showTimer = null;
-let dismissTimer = null;
 
 function clearTimers() {
   if (showTimer != null) {
     clearTimeout(showTimer);
     showTimer = null;
   }
-  if (dismissTimer != null) {
-    clearTimeout(dismissTimer);
-    dismissTimer = null;
-  }
 }
 
-function dismiss() {
+/**
+ * Only asks to be dismissed. The main process owns the decision so that every
+ * monitor leaves together instead of whichever screen was clicked.
+ */
+function requestDismiss() {
+  if (!stage.classList.contains('visible')) return;
+  window.swr.dismissOverlay();
+}
+
+/** Play the exit. Main broadcasts this to all screens at the same instant. */
+function leave() {
   if (!stage.classList.contains('visible')) return;
   clearTimers();
   stage.classList.remove('dropping');
   stage.classList.add('leaving');
-  dismissTimer = setTimeout(() => {
-    stage.classList.remove('visible', 'leaving');
-    window.swr.dismissOverlay();
-  }, 1100);
 }
 
 function startDrop(message) {
@@ -49,9 +50,10 @@ function show(payload) {
   showTimer = setTimeout(() => startDrop(message), delay);
 }
 
-document.body.addEventListener('click', dismiss);
+document.body.addEventListener('click', requestDismiss);
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') dismiss();
+  if (e.key === 'Escape') requestDismiss();
 });
 
 window.swr.onOverlayShow(show);
+window.swr.onOverlayLeave(leave);

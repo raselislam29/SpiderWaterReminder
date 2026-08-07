@@ -13,6 +13,11 @@ contextBridge.exposeInMainWorld('swr', {
     ipcRenderer.on('overlay:show', handler);
     return () => ipcRenderer.removeListener('overlay:show', handler);
   },
+  onOverlayLeave: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on('overlay:leave', handler);
+    return () => ipcRenderer.removeListener('overlay:leave', handler);
+  },
   onState: (cb) => {
     const handler = (_e, state) => cb(state);
     ipcRenderer.on('state:updated', handler);
