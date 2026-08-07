@@ -189,11 +189,24 @@ function applyState(partial, { reschedule = true } = {}) {
   return state;
 }
 
-function showOverlay(message) {
+function whenOverlayReady(win) {
+  return new Promise((resolve) => {
+    if (!win || win.isDestroyed()) {
+      resolve();
+      return;
+    }
+    if (!win.webContents.isLoading()) {
+      resolve();
+      return;
+    }
+    win.webContents.once('did-finish-load', () => resolve());
+  });
+}
+
+async function showOverlay(message) {
   if (!overlayWindows.length) createOverlayWindows();
   if (popupWindow && popupWindow.isVisible()) popupWindow.hide();
 
-  const payload = { message: message || state.reminderText };
   const displays = screen.getAllDisplays();
 
   // Keep one overlay window per monitor (rebuild if display count changed).
@@ -201,22 +214,25 @@ function showOverlay(message) {
     createOverlayWindows();
   }
 
-  overlayWindows.forEach((win, index) => {
-    if (!win || win.isDestroyed()) return;
+  const windows = overlayWindows.filter((win) => win && !win.isDestroyed());
+  windows.forEach((win, index) => {
     const bounds = displays[index]?.bounds || displays[0].bounds;
     win.setBounds(bounds);
-
-    const send = () => {
-      if (!win.isDestroyed()) win.webContents.send('overlay:show', payload);
-    };
-
-    win.show();
-    if (win.webContents.isLoading()) {
-      win.webContents.once('did-finish-load', send);
-    } else {
-      send();
-    }
+    win.showInactive();
   });
+
+  // Wait until every screen overlay is ready, then start them together.
+  await Promise.all(windows.map((win) => whenOverlayReady(win)));
+
+  const payload = {
+    message: message || state.reminderText,
+    // Shared wall-clock start so every display begins the same frame.
+    startAt: Date.now() + 80,
+  };
+
+  for (const win of windows) {
+    if (!win.isDestroyed()) win.webContents.send('overlay:show', payload);
+  }
 
   // Focus the overlay on the monitor with the cursor.
   const cursorDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
