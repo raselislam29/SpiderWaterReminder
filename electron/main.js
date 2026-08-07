@@ -28,7 +28,8 @@ if (!gotLock) {
 
 let tray = null;
 let popupWindow = null;
-let overlayWindow = null;
+/** @type {BrowserWindow[]} */
+let overlayWindows = [];
 let state = null;
 let scheduler = null;
 
@@ -36,6 +37,44 @@ const ASSETS = path.join(__dirname, '..', 'assets');
 
 function asset(...parts) {
   return path.join(ASSETS, ...parts);
+}
+
+function destroyOverlayWindows() {
+  for (const win of overlayWindows) {
+    if (win && !win.isDestroyed()) win.destroy();
+  }
+  overlayWindows = [];
+}
+
+function createOverlayForDisplay(display) {
+  const { x, y, width, height } = display.bounds;
+  const win = new BrowserWindow({
+    x,
+    y,
+    width,
+    height,
+    show: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    movable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    focusable: true,
+    hasShadow: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.loadFile(path.join(__dirname, '..', 'renderer', 'overlay', 'index.html'));
+  return win;
 }
 
 function createPopupWindow() {
@@ -65,36 +104,9 @@ function createPopupWindow() {
   });
 }
 
-function createOverlayWindow() {
-  const display = screen.getPrimaryDisplay();
-  const { x, y, width, height } = display.bounds;
-
-  overlayWindow = new BrowserWindow({
-    x,
-    y,
-    width,
-    height,
-    show: false,
-    frame: false,
-    transparent: true,
-    backgroundColor: '#00000000',
-    resizable: false,
-    movable: false,
-    fullscreenable: false,
-    skipTaskbar: true,
-    alwaysOnTop: true,
-    focusable: true,
-    hasShadow: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
-
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
-  overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  overlayWindow.loadFile(path.join(__dirname, '..', 'renderer', 'overlay', 'index.html'));
+function createOverlayWindows() {
+  destroyOverlayWindows();
+  overlayWindows = screen.getAllDisplays().map((display) => createOverlayForDisplay(display));
 }
 
 function positionPopupNearTray() {
@@ -178,21 +190,42 @@ function applyState(partial, { reschedule = true } = {}) {
 }
 
 function showOverlay(message) {
-  if (!overlayWindow) return;
+  if (!overlayWindows.length) createOverlayWindows();
   if (popupWindow && popupWindow.isVisible()) popupWindow.hide();
 
   const payload = { message: message || state.reminderText };
-  const send = () => overlayWindow.webContents.send('overlay:show', payload);
+  const displays = screen.getAllDisplays();
 
-  overlayWindow.setBounds(screen.getPrimaryDisplay().bounds);
-  overlayWindow.show();
-  overlayWindow.focus();
-
-  if (overlayWindow.webContents.isLoading()) {
-    overlayWindow.webContents.once('did-finish-load', send);
-  } else {
-    send();
+  // Keep one overlay window per monitor (rebuild if display count changed).
+  if (overlayWindows.length !== displays.length) {
+    createOverlayWindows();
   }
+
+  overlayWindows.forEach((win, index) => {
+    if (!win || win.isDestroyed()) return;
+    const bounds = displays[index]?.bounds || displays[0].bounds;
+    win.setBounds(bounds);
+
+    const send = () => {
+      if (!win.isDestroyed()) win.webContents.send('overlay:show', payload);
+    };
+
+    win.show();
+    if (win.webContents.isLoading()) {
+      win.webContents.once('did-finish-load', send);
+    } else {
+      send();
+    }
+  });
+
+  // Focus the overlay on the monitor with the cursor.
+  const cursorDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const focusIndex = Math.max(
+    0,
+    displays.findIndex((d) => d.id === cursorDisplay.id)
+  );
+  const focusWin = overlayWindows[focusIndex] || overlayWindows[0];
+  if (focusWin && !focusWin.isDestroyed()) focusWin.focus();
 
   try {
     globalShortcut.register('Escape', hideOverlay);
@@ -207,8 +240,8 @@ function hideOverlay() {
   } catch {
     // ignore
   }
-  if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.hide();
+  for (const win of overlayWindows) {
+    if (win && !win.isDestroyed()) win.hide();
   }
 }
 
@@ -278,9 +311,13 @@ if (gotLock) {
     scheduler.configure(state);
 
     createPopupWindow();
-    createOverlayWindow();
+    createOverlayWindows();
     createTray();
     registerIpc();
+
+    screen.on('display-added', () => createOverlayWindows());
+    screen.on('display-removed', () => createOverlayWindows());
+    screen.on('display-metrics-changed', () => createOverlayWindows());
 
     app.on('activate', () => {
       if (!popupWindow) createPopupWindow();
@@ -295,4 +332,5 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
   scheduler?.stop();
+  destroyOverlayWindows();
 });
