@@ -18,7 +18,7 @@ let buttonTimer = null;
 
 function collectPartial() {
   return {
-    reminderText: messageEl.value.trim() || 'Time to drink water! 💧',
+    reminderText: messageEl.value.trim() || 'Time to drink water',
     mode,
     alarmTime: alarmTimeEl.value || '08:00',
     intervalMinutes: Number(intervalEl.value) || 60,
@@ -47,15 +47,9 @@ function formatTime(hhmm) {
 function friendlyStatus(state) {
   if (!state?.isActive) return 'No reminder set';
   if (state.mode === 'repeat') {
-    const label = {
-      15: 'every 15 min',
-      30: 'every 30 min',
-      45: 'every 45 min',
-      60: 'every hour',
-    }[state.intervalMinutes] || `every ${state.intervalMinutes} min`;
-    return `Saved · repeats ${label}`;
+    return state.statusText || 'Repeating reminder armed';
   }
-  return `Saved · drops at ${formatTime(state.alarmTime)}`;
+  return state.statusText || `Drops at ${formatTime(state.alarmTime)}`;
 }
 
 function showToast(message) {
@@ -111,7 +105,7 @@ segButtons.forEach((btn) => {
 setBtn.addEventListener('click', async () => {
   setBtn.disabled = true;
   try {
-    const state = await window.spydy.setReminder(collectPartial());
+    const state = await window.swr.setReminder(collectPartial());
     renderState(state, { celebrate: true });
   } finally {
     setBtn.disabled = false;
@@ -119,20 +113,24 @@ setBtn.addEventListener('click', async () => {
 });
 
 $('clearBtn').addEventListener('click', async () => {
-  const state = await window.spydy.clearReminder();
+  const state = await window.swr.clearReminder();
   renderState(state);
   showToast('Reminder cleared');
 });
 
 $('testBtn').addEventListener('click', async () => {
-  await window.spydy.setState(collectPartial());
-  await window.spydy.testReminder();
+  await window.swr.setState(collectPartial());
+  await window.swr.testReminder();
 });
 
 activeToggle.addEventListener('change', async () => {
-  const state = await window.spydy.toggleActive(activeToggle.checked);
+  const state = await window.swr.toggleActive(activeToggle.checked);
   renderState(state, { celebrate: Boolean(state.isActive) });
 });
 
-window.spydy.onState((state) => renderState(state));
-window.spydy.getState().then((state) => renderState(state));
+window.swr.onState((state) => renderState(state));
+window.swr.onStatusTick((statusText) => {
+  statusEl.textContent = statusText || 'No reminder set';
+  statusEl.classList.toggle('active', !String(statusText || '').startsWith('No reminder'));
+});
+window.swr.getState().then((state) => renderState(state));

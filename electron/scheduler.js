@@ -1,57 +1,85 @@
+/**
+ * Polling alarm clock — more reliable than a single long setTimeout
+ * for tray apps that sit idle in the background.
+ */
 class ReminderScheduler {
-  constructor({ onFire }) {
+  constructor({ onFire, onTick }) {
     this.onFire = onFire;
-    this.timer = null;
+    this.onTick = onTick;
     this.state = null;
+    this.nextFireAt = null;
+    this.pollTimer = null;
+    this.firing = false;
   }
 
   stop() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
     }
+    this.nextFireAt = null;
+    this.firing = false;
   }
 
   configure(state) {
-    this.state = state;
+    this.state = state ? { ...state } : null;
     this.stop();
 
-    if (!state?.isActive) return;
+    if (!state?.isActive) {
+      this.onTick?.(null);
+      return;
+    }
 
+    this.nextFireAt = this.#computeNextFire(state, Date.now());
+    this.pollTimer = setInterval(() => this.#tick(), 2000);
+    this.#tick();
+  }
+
+  getNextFireAt() {
+    return this.nextFireAt;
+  }
+
+  #tick() {
+    if (!this.state?.isActive || this.nextFireAt == null || this.firing) {
+      this.onTick?.(this.nextFireAt);
+      return;
+    }
+
+    const now = Date.now();
+    this.onTick?.(this.nextFireAt);
+
+    if (now < this.nextFireAt) return;
+
+    this.firing = true;
+    try {
+      this.onFire?.(this.state);
+    } finally {
+      // Schedule the following occurrence from the planned time to limit drift.
+      const base = Math.max(this.nextFireAt, now);
+      this.nextFireAt = this.#computeNextFire(this.state, base + 1);
+      this.firing = false;
+      this.onTick?.(this.nextFireAt);
+    }
+  }
+
+  #computeNextFire(state, afterMs) {
     if (state.mode === 'repeat') {
       const ms = Math.max(1, Number(state.intervalMinutes) || 60) * 60 * 1000;
-      this.timer = setTimeout(() => this.#fireAndReschedule(), ms);
-      return;
+      return afterMs + ms;
     }
-
-    const delay = this.#msUntilAlarm(state.alarmTime);
-    this.timer = setTimeout(() => this.#fireAndReschedule(), delay);
+    return this.#nextAlarmTimestamp(state.alarmTime, afterMs);
   }
 
-  #fireAndReschedule() {
-    this.onFire?.(this.state);
-    if (!this.state?.isActive) return;
-
-    if (this.state.mode === 'repeat') {
-      const ms = Math.max(1, Number(this.state.intervalMinutes) || 60) * 60 * 1000;
-      this.timer = setTimeout(() => this.#fireAndReschedule(), ms);
-      return;
-    }
-
-    // One-shot "At Time" — fire once per day at that clock time
-    const delay = this.#msUntilAlarm(this.state.alarmTime);
-    this.timer = setTimeout(() => this.#fireAndReschedule(), delay);
-  }
-
-  #msUntilAlarm(hhmm) {
+  #nextAlarmTimestamp(hhmm, afterMs) {
     const [h, m] = String(hhmm || '08:00').split(':').map((n) => parseInt(n, 10));
-    const now = new Date();
-    const next = new Date(now);
-    next.setHours(h || 0, m || 0, 0, 0);
-    if (next.getTime() <= now.getTime()) {
+    const after = new Date(afterMs);
+    const next = new Date(after);
+    next.setSeconds(0, 0);
+    next.setHours(Number.isFinite(h) ? h : 8, Number.isFinite(m) ? m : 0, 0, 0);
+    if (next.getTime() <= afterMs) {
       next.setDate(next.getDate() + 1);
     }
-    return Math.max(1000, next.getTime() - now.getTime());
+    return next.getTime();
   }
 }
 

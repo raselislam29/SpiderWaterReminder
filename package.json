@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "SpiderWaterReminder — satisfying water reminders with every drop",
   "main": "electron/main.js",
-  "author": "SpiderWaterReminder",
+  "author": "Rasel Islam",
   "license": "MIT",
   "scripts": {
     "start": "electron .",

@@ -3,7 +3,7 @@ const path = require('path');
 const { app } = require('electron');
 
 const DEFAULT_STATE = {
-  reminderText: 'Time to drink water! 💧',
+  reminderText: 'Time to drink water',
   mode: 'atTime', // 'atTime' | 'repeat'
   alarmTime: '08:00', // HH:mm local
   intervalMinutes: 60,

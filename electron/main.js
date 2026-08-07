@@ -7,6 +7,7 @@ const {
   ipcMain,
   screen,
   globalShortcut,
+  powerMonitor,
 } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -163,29 +164,61 @@ function formatTime(hhmm) {
   return `${h}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-function statusFor(activeState) {
-  if (!activeState.isActive) return 'No reminder set';
+function formatCountdown(nextFireAt) {
+  if (!nextFireAt) return '';
+  const sec = Math.max(0, Math.round((nextFireAt - Date.now()) / 1000));
+  if (sec < 60) return `in ${sec}s`;
+  const min = Math.floor(sec / 60);
+  const rem = sec % 60;
+  if (min < 60) return rem ? `in ${min}m ${rem}s` : `in ${min}m`;
+  const hr = Math.floor(min / 60);
+  const mins = min % 60;
+  return mins ? `in ${hr}h ${mins}m` : `in ${hr}h`;
+}
+
+function statusFor(activeState, nextFireAt = scheduler?.getNextFireAt?.()) {
+  if (!activeState?.isActive) return 'No reminder set · keep app in tray';
+  const eta = formatCountdown(nextFireAt);
   if (activeState.mode === 'repeat') {
     const label = {
+      1: 'every 1 min',
+      5: 'every 5 min',
       15: 'every 15 min',
       30: 'every 30 min',
       45: 'every 45 min',
       60: 'every hour',
     }[activeState.intervalMinutes] || `every ${activeState.intervalMinutes} min`;
-    return `Saved · repeats ${label}`;
+    return eta ? `Repeats ${label} · next ${eta}` : `Repeats ${label}`;
   }
-  return `Saved · drops at ${formatTime(activeState.alarmTime)}`;
+  return eta
+    ? `Drops at ${formatTime(activeState.alarmTime)} · ${eta}`
+    : `Drops at ${formatTime(activeState.alarmTime)}`;
+}
+
+function refreshStatus({ broadcastFull = false } = {}) {
+  if (!state) return;
+  state.statusText = statusFor(state, scheduler?.getNextFireAt());
+  if (tray) {
+    tray.setToolTip(
+      state.isActive
+        ? `SpiderWaterReminder — ${state.statusText}`
+        : 'SpiderWaterReminder — set a reminder (must stay running)'
+    );
+  }
+  if (broadcastFull) {
+    broadcastState();
+    return;
+  }
+  if (popupWindow && !popupWindow.isDestroyed()) {
+    popupWindow.webContents.send('status:tick', state.statusText);
+  }
 }
 
 function applyState(partial, { reschedule = true } = {}) {
   state = saveState({ ...state, ...partial, statusText: undefined });
-  state.statusText = statusFor(state);
-  state = saveState(state);
   if (reschedule) scheduler.configure(state);
-  if (tray) {
-    tray.setToolTip(state.isActive ? `SpiderWaterReminder — ${state.statusText}` : 'SpiderWaterReminder');
-  }
-  broadcastState();
+  refreshStatus({ broadcastFull: true });
+  state = saveState(state);
   return state;
 }
 
@@ -318,18 +351,31 @@ if (gotLock) {
   });
 
   app.whenReady().then(() => {
+    // Keep reminders alive after reboot / login.
+    app.setLoginItemSettings({ openAtLogin: true, enabled: true });
+
     state = loadState();
-    state.statusText = statusFor(state);
+    // Clean corrupted emoji leftovers from older saves.
+    if (typeof state.reminderText === 'string') {
+      state.reminderText = state.reminderText.replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '').trim()
+        || 'Time to drink water';
+    }
 
     scheduler = new ReminderScheduler({
       onFire: (current) => showOverlay(current?.reminderText),
+      onTick: () => refreshStatus(),
     });
     scheduler.configure(state);
+    refreshStatus({ broadcastFull: true });
 
     createPopupWindow();
     createOverlayWindows();
     createTray();
     registerIpc();
+
+    powerMonitor.on('resume', () => {
+      if (state?.isActive) scheduler.configure(state);
+    });
 
     screen.on('display-added', () => createOverlayWindows());
     screen.on('display-removed', () => createOverlayWindows());

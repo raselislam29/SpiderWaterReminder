@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('spydy', {
+contextBridge.exposeInMainWorld('swr', {
   getState: () => ipcRenderer.invoke('state:get'),
   setState: (partial) => ipcRenderer.invoke('state:set', partial),
   setReminder: (partial) => ipcRenderer.invoke('reminder:set', partial),
@@ -18,4 +18,10 @@ contextBridge.exposeInMainWorld('spydy', {
     ipcRenderer.on('state:updated', handler);
     return () => ipcRenderer.removeListener('state:updated', handler);
   },
+  onStatusTick: (cb) => {
+    const handler = (_e, statusText) => cb(statusText);
+    ipcRenderer.on('status:tick', handler);
+    return () => ipcRenderer.removeListener('status:tick', handler);
+  },
 });
+

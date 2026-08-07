@@ -1,6 +1,6 @@
-# SpiderWaterReminder (Windows)
+# SpiderWaterReminder
 
-Tray water-reminder app with Spider-Man drop overlay (Electron).
+Windows tray water-reminder app by **Rasel Islam** (Electron).
 
 ## Run locally
 
@@ -11,14 +11,16 @@ npm start
 
 Click the tray icon near the clock. **Test** previews the drop. Right-click tray → Quit.
 
-## Ship to other people
+## Ship
 
 ```bash
 npm run dist
 ```
 
 Outputs in `dist/`:
-- `SpiderWaterReminder-1.0.0-Setup.exe` — installer
-- `SpiderWaterReminder-1.0.0-Portable.exe` — portable
+- `SpiderWaterReminder-1.0.0-Setup.exe`
+- `SpiderWaterReminder-1.0.0-Portable.exe`
 
-Users download → install/run → open from Start Menu → use the tray icon.
+## Author
+
+Rasel Islam — https://github.com/raselislam29
