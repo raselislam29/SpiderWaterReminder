@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpiderWaterReminder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div>
+        <h1>SpiderWaterReminder</h1>
+        <p class="subtitle">Set a time, Spidey does the rest.</p>
+      </div>
+      <label class="toggle" title="Enable reminder">
+        <input type="checkbox" id="activeToggle" />
+        <span class="toggle-ui"></span>
+        <span class="toggle-label" id="toggleLabel">Off</span>
+      </label>
+    </header>
+
+    <div class="divider"></div>
+
+    <section class="field">
+      <label class="label" for="message">
+        <span class="icon">💬</span> Message
+      </label>
+      <input id="message" type="text" maxlength="120" placeholder="Time to drink water! 💧" />
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="field">
+      <label class="label">
+        <span class="icon">⏰</span> Schedule
+      </label>
+      <div class="segment" role="tablist">
+        <button type="button" class="seg-btn active" data-mode="atTime">At Time</button>
+        <button type="button" class="seg-btn" data-mode="repeat">Repeat</button>
+      </div>
+
+      <div id="atTimePanel" class="panel">
+        <input id="alarmTime" type="time" value="08:00" />
+      </div>
+
+      <div id="repeatPanel" class="panel hidden">
+        <select id="interval">
+          <option value="15">Every 15 min</option>
+          <option value="30">Every 30 min</option>
+          <option value="45">Every 45 min</option>
+          <option value="60" selected>Every 1 hour</option>
+        </select>
+      </div>
+    </section>
+
+    <p class="status" id="status">No reminder set</p>
+
+    <div class="actions">
+      <div class="secondary">
+        <button type="button" class="link-btn" id="testBtn">Test</button>
+        <button type="button" class="link-btn" id="clearBtn">Clear</button>
+      </div>
+      <button type="button" class="primary" id="setBtn">Set Reminder</button>
+    </div>
+
+    <div id="toast" class="toast" hidden>Reminder saved</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

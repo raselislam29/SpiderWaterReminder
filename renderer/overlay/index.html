@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpiderWaterReminder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="stage" class="stage" aria-live="polite">
+    <div class="spidey-wrap" id="spideyWrap">
+      <div class="web"></div>
+      <img id="spidey" class="spidey" src="../../assets/spider-man.png" alt="Spider-Man" draggable="false" />
+    </div>
+
+    <div class="card" id="card">
+      <div class="card-corner tl"></div>
+      <div class="card-corner tr"></div>
+      <div class="card-corner bl"></div>
+      <div class="card-corner br"></div>
+      <div class="card-head">
+        <span class="dot"></span>
+        <span>REMINDER</span>
+      </div>
+      <p class="card-msg" id="cardMsg">Time to drink water! 💧</p>
+    </div>
+  </div>
+  <script src="overlay.js"></script>
+</body>
+</html>
