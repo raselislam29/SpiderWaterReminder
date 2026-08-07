@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spydy — Satisfying reminders with every drop</title>
+    <link rel="icon" href="images/logo.png" type="image/png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#fcfaf6',
+                        dark: '#211f1e',
+                        highlight: '#ffb3c6', // Pinkish highlight
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fcfaf6;
+            color: #211f1e;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .highlight-box {
+            position: relative;
+            display: inline-block;
+            z-index: 1;
+            padding: 0 4px;
+        }
+
+        .highlight-box::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 6px;
+            width: 100%;
+            height: 40%;
+            background-color: #f7a8b8;
+            z-index: -1;
+            mix-blend-mode: multiply;
+        }
+
+        .mockup-container {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 40px;
+            padding-bottom: 20px;
+        }
+
+        .mockup {
+            width: 92%; /* Wider on mobile, max-width handles desktop */
+            max-width: 1200px;
+            height: 550px; /* Shorter height as requested */
+            background-color: #1a1a1a;
+            border-radius: 40px; /* Rounded on ALL corners */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); /* Shadow adjusted to look good on all sides */
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .abstract-bg {
+            position: absolute;
+            bottom: -50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at 50% 100%, #991b1b, #450a0a, #000000);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.8;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="w-full px-8 py-6 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-3 cursor-pointer">
+            <img src="images/logo.png" alt="Spydy" class="w-9 h-9 rounded-lg shadow-sm">
+            <span class="text-xl font-medium tracking-tight">Spydy</span>
+        </div>
+        
+        <div class="flex items-center space-x-4 sm:space-x-6">
+            <a href="manual.html" class="text-[0.95rem] font-bold text-[#2c2b29] hover:text-black transition">Manual & FAQs</a>
+            <a href="https://github.com/raselislam29/SpiderWaterReminder/releases/download/v1.0.0/SpiderWaterReminder-1.0.0-Setup.exe"
+               onclick="va('event', 'Download Windows Clicked');"
+               class="flex items-center bg-gray-100 hover:bg-gray-200 transition text-dark text-sm font-bold px-4 py-2 rounded-full">
+                Download for Windows
+            </a>
+            <a href="SpydyReminder.dmg" download="SpydyReminder.dmg"
+               onclick="va('event', 'Download Clicked');"
+               class="hidden sm:flex items-center bg-gray-100 hover:bg-gray-200 transition text-dark text-sm font-bold px-4 py-2 rounded-full">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.37 7.648c-.114.088-2.11 1.213-2.11 3.715 0 2.894 2.54 3.918 2.616 3.944-.011.062-.403 1.402-1.34 2.767-.834 1.201-1.706 2.4-3.032 2.4s-1.667-.77-3.198-.77c-1.492 0-2.022.796-3.235.796-1.214 0-2.06-1.112-3.033-2.477C4.911 16.42 4 13.93 4 11.566c0-3.791 2.465-5.802 4.891-5.802 1.29 0 2.364.847 3.173.847.77 0 1.972-.897 3.438-.897.556 0 2.553.05 3.867 1.934Zm-4.564-3.54c.607-.719 1.036-1.718 1.036-2.716 0-.138-.012-.279-.037-.392-.987.037-2.161.657-2.87 1.478-.555.632-1.074 1.63-1.074 2.643 0 .152.026.304.037.353.063.011.164.025.266.025.885 0 1.998-.593 2.642-1.39Z"></path></svg>
+                Mac
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="w-full flex-shrink-0 flex flex-col items-center text-center mt-12 sm:mt-16 px-6 z-10">
+        
+        <h1 class="text-6xl sm:text-[5.5rem] leading-[1.05] font-[800] tracking-[-0.03em] text-[#2c2b29] mb-10 max-w-4xl relative z-20">
+            Satisfying <span class="highlight-box">reminders<img src="images/spider-man-coming-down.png" alt="Spider-Man" class="absolute w-[220px] sm:w-[300px] h-auto z-50 pointer-events-none" style="top: 75%; right: -60px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.3));"></span><br />
+            with every drop
+        </h1>
+        
+        <div class="flex flex-wrap items-center justify-center gap-3">
+            <!-- Windows CTA -->
+            <a href="https://github.com/raselislam29/SpiderWaterReminder/releases/download/v1.0.0/SpiderWaterReminder-1.0.0-Setup.exe"
+               onclick="va('event', 'Download Windows Clicked');"
+               class="flex items-center bg-[#2c2b29] hover:bg-[#1a1917] shadow-xl text-white text-lg font-bold px-6 py-3.5 rounded-[1rem] transition transform hover:scale-[1.02]">
+                Download for Windows
+            </a>
+
+            <!-- Mac CTA -->
+            <a href="SpydyReminder.dmg" download="SpydyReminder.dmg"
+               onclick="va('event', 'Download Clicked');"
+               class="flex items-center bg-white border border-gray-200 hover:bg-gray-50 shadow-lg text-[#2c2b29] text-lg font-bold px-6 py-3.5 rounded-[1rem] transition transform hover:scale-[1.02]">
+                Download for Mac
+            </a>
+
+            <!-- Secondary Info -->
+            <div class="flex items-center bg-gray-100 px-4 py-3.5 rounded-[1rem]">
+                <img src="images/logo.png" class="w-5 h-5 rounded mr-2 opacity-80" />
+                <span class="text-sm font-bold text-gray-800 mr-3">100% Free</span>
+                <span class="bg-gray-700 text-white text-xs font-bold px-2 py-0.5 rounded">v1.0</span>
+            </div>
+            
+            <!-- Badges -->
+            <div class="hidden sm:flex flex-col ml-2 text-left border-l-2 border-gray-200 pl-4 py-1">
+                <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest">Built for</span>
+                <span class="text-sm font-bold text-gray-700">Windows &amp; macOS</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Mockup -->
+    <div class="mockup-container">
+        <div class="mockup">
+            <div class="abstract-bg"></div>
+            
+            <!-- App Preview UI Overlay -->
+            <div class="absolute inset-0 w-full h-full p-8 flex items-center justify-center z-10">
+                
+                <!-- Spydy Popup Replica (Glassmorphism) -->
+                <div class="w-80 bg-[#1e1c1a]/70 backdrop-blur-3xl rounded-2xl p-5 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col">
+                    
+                    <!-- Header -->
+                    <div class="flex items-center mb-4">
+                        <div>
+                            <h3 class="text-white font-bold leading-tight tracking-wide">Spider Reminder</h3>
+                            <p class="text-[11px] font-medium text-white/50">Set a time, Spidey does the rest.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4"></div>
+                    
+                    <!-- Message Input -->
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold text-white/40 mb-1.5 uppercase tracking-widest">Message</label>
+                        <div class="w-full bg-black/40 border border-white/5 rounded-lg px-3 py-2.5 shadow-inner">
+                            <span class="text-sm font-medium text-white/90">Time to drink water! 💧</span>
+                        </div>
+                    </div>
+                    
+                    <div class="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4"></div>
+                    
+                    <!-- Schedule -->
+                    <div class="mb-5">
+                        <label class="block text-[10px] font-bold text-white/40 mb-1.5 uppercase tracking-widest">Schedule</label>
+                        
+                        <!-- Tabs -->
+                        <div class="flex bg-black/40 rounded-lg p-1 mb-3 border border-white/5 shadow-inner">
+                            <div class="flex-1 bg-white/10 shadow-sm text-white text-xs font-semibold text-center py-1.5 rounded-md border border-white/5">At Time</div>
+                            <div class="flex-1 text-white/40 text-xs font-semibold text-center py-1.5">Repeat</div>
+                        </div>
+                        
+                        <!-- Time Input -->
+                        <div class="flex items-center justify-between px-1">
+                            <div class="flex space-x-2">
+                                <div class="bg-black/50 border border-white/10 rounded-lg w-12 h-11 flex items-center justify-center shadow-inner relative overflow-hidden">
+                                    <span class="text-white font-mono text-lg font-semibold relative z-10">08</span>
+                                    <div class="absolute bottom-0 w-full h-1/2 bg-white/5 z-0"></div>
+                                </div>
+                                <span class="text-white/30 font-bold self-center text-lg">:</span>
+                                <div class="bg-black/50 border border-white/10 rounded-lg w-12 h-11 flex items-center justify-center shadow-inner relative overflow-hidden">
+                                    <span class="text-white font-mono text-lg font-semibold relative z-10">00</span>
+                                    <div class="absolute bottom-0 w-full h-1/2 bg-white/5 z-0"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col bg-black/50 border border-white/10 rounded-lg overflow-hidden text-[10px] font-bold shadow-inner">
+                                <div class="bg-white/15 text-white px-2.5 py-1 text-center">AM</div>
+                                <div class="text-white/30 px-2.5 py-1 text-center hover:bg-white/5 cursor-pointer">PM</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="flex items-center justify-center space-x-2 mb-4">
+                        <div class="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+                        <span class="text-[10px] text-white/40 font-semibold uppercase tracking-wider">No reminder set</span>
+                    </div>
+
+                    <!-- Button -->
+                    <button class="w-full bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 border border-red-400/30 text-white text-sm font-bold py-2.5 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] flex justify-center items-center transition-all">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Set Reminder
+                    </button>
+                    
+                    <button class="w-full mt-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-[11px] font-bold py-2 rounded-lg transition-all">
+                        Test Now
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <section class="w-full flex flex-col items-center justify-center pt-24 pb-20 px-6 relative z-10">
+        <h2 class="text-4xl sm:text-5xl font-[800] tracking-tight text-[#2c2b29] mb-16 text-center">How to use it</h2>
+        <div class="flex flex-col sm:flex-row max-w-4xl w-full gap-12 sm:gap-6 justify-between items-start">
+            
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center text-center flex-1">
+                <div class="w-14 h-14 rounded-2xl bg-[#2c2b29] text-white flex items-center justify-center text-xl font-bold mb-6 shadow-xl shadow-black/10">1</div>
+                <h3 class="text-xl font-bold text-[#2c2b29] mb-3">Install App</h3>
+                <p class="text-gray-500 text-[0.95rem] font-medium leading-relaxed max-w-[220px]">Download for Windows or Mac. On Windows it lives in the system tray near the clock.</p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center text-center flex-1">
+                <div class="w-14 h-14 rounded-2xl bg-[#2c2b29] text-white flex items-center justify-center text-xl font-bold mb-6 shadow-xl shadow-black/10">2</div>
+                <h3 class="text-xl font-bold text-[#2c2b29] mb-3">Set Reminder</h3>
+                <p class="text-gray-500 text-[0.95rem] font-medium leading-relaxed max-w-[220px]">Type your message and set the exact time you want to be reminded.</p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center text-center flex-1">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-red-500 to-red-700 text-white flex items-center justify-center text-xl font-bold mb-6 shadow-xl shadow-red-500/20">3</div>
+                <h3 class="text-xl font-bold text-[#2c2b29] mb-3">Stay on Track</h3>
+                <p class="text-gray-500 text-[0.95rem] font-medium leading-relaxed max-w-[220px]">Spydy drops down onto your screen exactly when you need him.</p>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Video Tutorial Section -->
+    <div class="w-full max-w-4xl mx-auto px-6 pb-12 z-10 relative flex flex-col items-center">
+        <h3 class="text-3xl font-[800] tracking-tight text-[#2c2b29] mb-6">Installation Video</h3>
+        <div class="bg-black/5 p-2 sm:p-3 rounded-3xl w-full max-w-3xl shadow-sm border border-gray-100">
+            <video 
+                class="w-full h-auto rounded-2xl shadow-lg border border-black/10" 
+                autoplay loop muted playsinline controls>
+                <source src="images/done.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- Installation Security Note -->
+    <div class="w-full max-w-3xl mx-auto px-6 pb-16 z-10 relative">
+        <div class="bg-red-50 border border-red-100 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-5 transition hover:shadow-md">
+            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <div>
+                <h4 class="text-base font-bold text-red-900 mb-1">Getting a Mac Security Warning?</h4>
+                <p class="text-[0.9rem] text-red-800 leading-relaxed font-medium mb-3">
+                    If Apple blocks the app from opening, simply go to your Mac's <strong>System Settings > Privacy & Security</strong>, scroll down to the Security section, and click <strong>Open Anyway</strong> to bypass it.
+                </p>
+                <a href="https://www.instagram.com/jeyy.sh/" target="_blank" class="inline-flex items-center text-[0.9rem] text-red-900 font-bold hover:text-red-700 transition">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    Facing any problems? Reach out to me on Instagram
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Footer with Socials -->
+    <footer class="w-full flex flex-col items-center justify-center space-y-6 pt-16 pb-20 bg-[#fcfaf6]">
+        <p class="text-3xl sm:text-4xl font-[800] tracking-tight text-[#2c2b29]">Let me know your feedback</p>
+        <div class="flex space-x-8">
+            <a href="mailto:jayeshvishwakarma6028@gmail.com" class="text-[#2c2b29] hover:text-black transition transform hover:scale-110">
+                <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </a>
+            <a href="https://www.instagram.com/jeyy.sh/" target="_blank" class="text-[#2c2b29] hover:text-black transition transform hover:scale-110">
+                <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="https://www.youtube.com/@Jey_Script" target="_blank" class="text-[#2c2b29] hover:text-black transition transform hover:scale-110">
+                <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+            </a>
+        </div>
+    </footer>
+
+</body>
+</html>
