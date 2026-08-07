@@ -7,52 +7,112 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- One authored icon set: 16px grid, 1.6 stroke, round caps. -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-message" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13.5 9.5a1.6 1.6 0 0 1-1.6 1.6H5.2L2.5 13.6V4.1a1.6 1.6 0 0 1 1.6-1.6h7.8a1.6 1.6 0 0 1 1.6 1.6z"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="8" cy="8" r="5.6"/><path d="M8 4.9V8l2.1 1.2"/>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.4" y="3.4" width="11.2" height="10.2" rx="1.6"/><path d="M2.4 6.6h11.2M5.6 2.4v2M10.4 2.4v2"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13.2 9.3A5.6 5.6 0 0 1 6.7 2.8a5.6 5.6 0 1 0 6.5 6.5"/>
+    </symbol>
+    <symbol id="i-timer" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="8" cy="9.2" r="4.9"/><path d="M8 6.9v2.3M6.3 1.9h3.4"/>
+    </symbol>
+  </svg>
+
   <div class="shell">
     <header class="header">
-      <div>
+      <img class="mark" src="../../assets/logo.png" alt="" width="28" height="28" />
+      <div class="header-text">
         <h1>SpiderWaterReminder</h1>
         <p class="subtitle">Set a time. The drop does the rest.</p>
       </div>
-      <label class="toggle" title="Enable reminder">
+      <label class="toggle" title="Turn the reminder on or off">
         <input type="checkbox" id="activeToggle" />
         <span class="toggle-ui"></span>
         <span class="toggle-label" id="toggleLabel">Off</span>
       </label>
     </header>
 
-    <div class="divider"></div>
-
     <section class="field">
-      <label class="label" for="message">
-        <span class="icon">💬</span> Message
-      </label>
+      <div class="label"><svg class="ico"><use href="#i-message"/></svg> Message</div>
+      <div class="templates" id="templates" role="group" aria-label="Reminder templates">
+        <button type="button" class="chip" data-template="water">Drink Water</button>
+        <button type="button" class="chip" data-template="lunch">Lunch break</button>
+        <button type="button" class="chip" data-template="email">Check email</button>
+        <button type="button" class="chip" data-template="stand">Stand up</button>
+        <button type="button" class="chip" data-template="eyes">Rest eyes</button>
+      </div>
       <input id="message" type="text" maxlength="120" placeholder="Time to drink water" />
     </section>
 
-    <div class="divider"></div>
-
     <section class="field">
-      <label class="label">
-        <span class="icon">⏰</span> Schedule
-      </label>
+      <div class="label"><svg class="ico"><use href="#i-clock"/></svg> Schedule</div>
       <div class="segment" role="tablist">
-        <button type="button" class="seg-btn active" data-mode="atTime">At Time</button>
-        <button type="button" class="seg-btn" data-mode="repeat">Repeat</button>
+        <button type="button" class="seg-btn active" data-mode="atTime" role="tab">At Time</button>
+        <button type="button" class="seg-btn" data-mode="repeat" role="tab">Repeat</button>
       </div>
 
       <div id="atTimePanel" class="panel">
-        <input id="alarmTime" type="time" value="08:00" />
+        <input id="alarmTime" type="time" value="08:00" aria-label="Reminder time" />
       </div>
 
       <div id="repeatPanel" class="panel hidden">
-        <select id="interval">
+        <select id="interval" aria-label="Repeat interval">
           <option value="1">Every 1 min</option>
           <option value="5">Every 5 min</option>
+          <option value="10">Every 10 min</option>
           <option value="15" selected>Every 15 min</option>
           <option value="30">Every 30 min</option>
           <option value="45">Every 45 min</option>
           <option value="60">Every 1 hour</option>
+          <option value="90">Every 1.5 hours</option>
+          <option value="120">Every 2 hours</option>
+          <option value="180">Every 3 hours</option>
         </select>
+      </div>
+    </section>
+
+    <section class="field">
+      <div class="row">
+        <div class="label"><svg class="ico"><use href="#i-calendar"/></svg> Days</div>
+        <div class="day-presets">
+          <button type="button" class="link-btn tiny" data-days="all">Every day</button>
+          <button type="button" class="link-btn tiny" data-days="weekdays">Weekdays</button>
+        </div>
+      </div>
+      <div class="days" id="days" role="group" aria-label="Days the reminder runs"></div>
+    </section>
+
+    <section class="field">
+      <div class="row">
+        <div class="label"><svg class="ico"><use href="#i-moon"/></svg> Quiet hours</div>
+        <label class="toggle small" title="Silence reminders inside a window">
+          <input type="checkbox" id="quietToggle" />
+          <span class="toggle-ui"></span>
+        </label>
+      </div>
+      <div class="panel quiet hidden" id="quietPanel">
+        <input id="quietStart" type="time" value="22:00" aria-label="Quiet hours start" />
+        <span class="dash">to</span>
+        <input id="quietEnd" type="time" value="07:00" aria-label="Quiet hours end" />
+      </div>
+      <p class="hint" id="quietHint">Reminders stay silent inside this window.</p>
+    </section>
+
+    <section class="field">
+      <div class="label"><svg class="ico"><use href="#i-timer"/></svg> Dismiss after</div>
+      <div class="segment" id="dismissSeg" role="group" aria-label="Auto-dismiss duration">
+        <button type="button" class="seg-btn" data-seconds="10">10s</button>
+        <button type="button" class="seg-btn active" data-seconds="20">20s</button>
+        <button type="button" class="seg-btn" data-seconds="30">30s</button>
+        <button type="button" class="seg-btn" data-seconds="60">1m</button>
       </div>
     </section>
 

@@ -34,7 +34,19 @@ let overlayWindows = [];
 let state = null;
 let scheduler = null;
 
-/** Auto-dismiss the reminder if it is left untouched. */
+const IS_MAC = process.platform === 'darwin';
+
+/**
+ * Starting height only. The popup measures its own content and reports it, so
+ * the panel is never taller than it needs nor short enough to scroll.
+ */
+const POPUP_HEIGHT = 700;
+/** Matches the .shell margin in renderer/popup/styles.css (8px per side). */
+const POPUP_CHROME = 16;
+
+let desiredPopupHeight = POPUP_HEIGHT;
+
+/** Fallback when no auto-dismiss duration has been chosen yet. */
 const OVERLAY_AUTO_DISMISS_MS = 20000;
 /** Must match the climb-out animation in renderer/overlay/styles.css. */
 const OVERLAY_LEAVE_MS = 1100;
@@ -87,14 +99,16 @@ function createOverlayForDisplay(display) {
 
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // Keep the drop above the macOS menu bar and Dock.
+  if (IS_MAC) win.setWindowButtonVisibility?.(false);
   win.loadFile(path.join(__dirname, '..', 'renderer', 'overlay', 'index.html'));
   return win;
 }
 
 function createPopupWindow() {
   popupWindow = new BrowserWindow({
-    width: 340,
-    height: 500,
+    width: 360,
+    height: POPUP_HEIGHT,
     show: false,
     frame: false,
     resizable: false,
@@ -126,12 +140,20 @@ function createOverlayWindows() {
 function positionPopupNearTray() {
   if (!popupWindow || !tray) return;
   const trayBounds = tray.getBounds();
-  const winBounds = popupWindow.getBounds();
   const display = screen.getDisplayNearestPoint({
     x: trayBounds.x,
     y: trayBounds.y,
   });
   const work = display.workArea;
+
+  // On a short screen the panel must shrink rather than run off the edge; the
+  // shell scrolls its own content once it is smaller than the sections need.
+  const height = Math.max(320, Math.min(desiredPopupHeight, work.height - 8));
+  const winBounds = popupWindow.getBounds();
+  if (winBounds.height !== height) {
+    popupWindow.setSize(winBounds.width, height, false);
+    winBounds.height = height;
+  }
 
   let x = Math.round(trayBounds.x + trayBounds.width / 2 - winBounds.width / 2);
   let y = Math.round(trayBounds.y - winBounds.height - 8);
@@ -191,6 +213,10 @@ function formatCountdown(nextFireAt) {
 
 function statusFor(activeState, nextFireAt = scheduler?.getNextFireAt?.()) {
   if (!activeState?.isActive) return 'No reminder set · keep app in tray';
+  if (nextFireAt == null) {
+    // The scheduler found no slot — days and quiet hours rule everything out.
+    return 'Never fires · widen the days or quiet hours';
+  }
   const eta = formatCountdown(nextFireAt);
   if (activeState.mode === 'repeat') {
     const label = {
@@ -314,10 +340,13 @@ async function showOverlay(message) {
     if (!win.isDestroyed()) win.webContents.send('overlay:show', payload);
   }
 
-  // Counted from the shared start instant, so the 20s is the same on every
+  // Counted from the shared start instant, so the delay is the same on every
   // monitor no matter when each window finished loading.
+  const holdMs = Number(state?.autoDismissSeconds) > 0
+    ? Number(state.autoDismissSeconds) * 1000
+    : OVERLAY_AUTO_DISMISS_MS;
   const untilStart = Math.max(0, payload.startAt - Date.now());
-  autoDismissTimer = setTimeout(beginOverlayDismiss, untilStart + OVERLAY_AUTO_DISMISS_MS);
+  autoDismissTimer = setTimeout(beginOverlayDismiss, untilStart + holdMs);
 
   // Focus the overlay on the monitor with the cursor.
   const cursorDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
@@ -349,11 +378,15 @@ function hideOverlay() {
 }
 
 function createTray() {
-  const iconPath = asset('logo.png');
-  let image = nativeImage.createFromPath(iconPath);
-  if (!image.isEmpty()) {
-    image = image.resize({ width: 16, height: 16 });
+  // tray-icon.png is 16px with a 32px @2x sibling, which Electron picks up
+  // automatically on HiDPI displays. Already tray-sized — do not resize.
+  let image = nativeImage.createFromPath(asset('tray-icon.png'));
+  if (image.isEmpty()) {
+    image = nativeImage.createFromPath(asset('logo.png'));
+    if (!image.isEmpty()) image = image.resize({ width: 16, height: 16 });
   }
+  // macOS menu bar expects a monochrome mask that inverts with the theme.
+  if (IS_MAC && !image.isEmpty()) image.setTemplateImage(true);
   tray = new Tray(image.isEmpty() ? nativeImage.createEmpty() : image);
   const tip = state?.isActive
     ? `SpiderWaterReminder — ${statusFor(state)}`
@@ -397,6 +430,15 @@ function registerIpc() {
   });
 
   ipcMain.on('overlay:dismiss', () => beginOverlayDismiss());
+
+  ipcMain.on('popup:height', (_e, px) => {
+    const content = Math.round(Number(px) || 0);
+    if (!content) return;
+    desiredPopupHeight = content + POPUP_CHROME;
+    if (popupWindow && !popupWindow.isDestroyed() && popupWindow.isVisible()) {
+      positionPopupNearTray();
+    }
+  });
 }
 
 if (gotLock) {
@@ -405,6 +447,9 @@ if (gotLock) {
   });
 
   app.whenReady().then(() => {
+    // Menu-bar-only on macOS: there is no main window to return to.
+    if (IS_MAC) app.dock?.hide();
+
     // Keep reminders alive after reboot / login.
     app.setLoginItemSettings({ openAtLogin: true, enabled: true });
 

@@ -136,6 +136,14 @@ button,
   transform: translateY(-2px);
 }
 
+/* Platform mark inside a download button. */
+.btn-ico {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  opacity: 0.92;
+}
+
 .btn-primary {
   background: var(--ink);
   color: #fff;

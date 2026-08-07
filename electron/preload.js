@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('swr', {
   testReminder: () => ipcRenderer.invoke('reminder:test'),
   toggleActive: (isActive) => ipcRenderer.invoke('reminder:toggle', isActive),
   dismissOverlay: () => ipcRenderer.send('overlay:dismiss'),
+  reportHeight: (px) => ipcRenderer.send('popup:height', px),
   onOverlayShow: (cb) => {
     const handler = (_e, payload) => cb(payload);
     ipcRenderer.on('overlay:show', handler);

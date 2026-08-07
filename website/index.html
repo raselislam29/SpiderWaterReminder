@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SpiderWaterReminder — Hydration drops that stick</title>
-  <meta name="description" content="SpiderWaterReminder by Rasel Islam. A free Windows tray app that drops a reminder onto your screen when it’s time to drink water." />
+  <meta name="description" content="SpiderWaterReminder by Rasel Islam. A free Windows and macOS tray app that drops a reminder onto your screen when it’s time to drink water." />
   <meta name="author" content="Rasel Islam" />
-  <link rel="icon" href="images/logo.png" type="image/png" />
+  <link rel="icon" href="images/spider-mark.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -19,16 +19,12 @@
 <body>
   <header class="site-header">
     <a class="brand" href="index.html">
-      <img src="images/logo.png" alt="" />
+      <img src="images/spider-mark.png" alt="" />
       <span>SpiderWaterReminder</span>
     </a>
     <nav class="nav" aria-label="Primary">
       <a class="nav-link" href="manual.html">Manual</a>
-      <a
-        class="btn btn-primary"
-        href="https://github.com/raselislam29/SpiderWaterReminder/releases/download/v1.0.0/SpiderWaterReminder-1.0.0-Setup.exe"
-        onclick="va('event', 'Download Windows Clicked');"
-      >Download</a>
+      <a class="btn btn-primary" href="#download">Download</a>
     </nav>
   </header>
 
@@ -44,18 +40,29 @@
           SpiderWater
           <span>Reminder</span>
         </h1>
-        <p class="hero-line">A Windows tray app by Rasel Islam that drops a reminder onto your screen when it’s time to drink.</p>
-        <div class="cta-row">
+        <p class="hero-line">A Windows and macOS tray app by Rasel Islam that drops a reminder onto your screen when it’s time to drink.</p>
+        <div class="cta-row" id="download">
           <a
             class="btn btn-crimson"
             href="https://github.com/raselislam29/SpiderWaterReminder/releases/download/v1.0.0/SpiderWaterReminder-1.0.0-Setup.exe"
             onclick="va('event', 'Download Windows Clicked');"
-          >Download for Windows</a>
+          >
+            <svg class="btn-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.6 10.2 4.6V11.3H3V5.6ZM11.4 4.4 21 3v8.3H11.4V4.4ZM3 12.5h7.2v6.7L3 18.2v-5.7ZM11.4 12.5H21V21l-9.6-1.4v-7.1Z"/></svg>
+            Download for Windows
+          </a>
+          <a
+            class="btn btn-secondary"
+            href="https://github.com/raselislam29/SpiderWaterReminder/releases/download/v1.0.0/SpiderWaterReminder-1.0.0-mac-arm64.dmg"
+            onclick="va('event', 'Download Mac Clicked');"
+          >
+            <svg class="btn-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.2 1.8-3.3 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.6 2.2 2.7 2.1 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7c1.1 0 1.9-1 2.6-2.1.8-1.2 1.2-2.4 1.2-2.4s-2.2-.9-2.2-3.3ZM14.2 6.2c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.5.6-1 1.6-.9 2.6 1 .1 2-.5 2.6-1.2Z"/></svg>
+            Download for Mac
+          </a>
           <a class="btn btn-secondary" href="manual.html">How it works</a>
         </div>
         <div class="meta-row">
           <span><strong>Free</strong> · v1.0</span>
-          <span>Windows</span>
+          <span>Windows &amp; macOS</span>
           <span>by Rasel Islam</span>
         </div>
       </div>
@@ -115,7 +122,7 @@
       <article class="step">
         <div class="step-index">1</div>
         <h3>Install</h3>
-        <p>Download the Windows installer, then open SpiderWaterReminder from the Start Menu. The icon sits by the clock.</p>
+        <p>Grab the Windows installer or the Mac disk image, then open SpiderWaterReminder. The icon sits by the clock on Windows, and in the menu bar on macOS.</p>
       </article>
       <article class="step">
         <div class="step-index">2</div>
@@ -146,8 +153,8 @@
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
       </div>
       <div>
-        <h3>Windows SmartScreen warning?</h3>
-        <p>Choose <strong>More info → Run anyway</strong>. The app is free and unsigned until a code-signing certificate is added.</p>
+        <h3>Security warning on first launch?</h3>
+        <p>On Windows, choose <strong>More info → Run anyway</strong>. On macOS, right-click the app and pick <strong>Open</strong>. The app is free and unsigned until a code-signing certificate is added.</p>
       </div>
     </div>
   </section>

@@ -6,3 +6,5 @@ Thumbs.db
 .vscode/
 .idea/
 *.asar
+tools/popup-shot.png
+tools/tray-preview.png
