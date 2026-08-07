@@ -1,3 +1,17 @@
+:root {
+  /* Figure width drives the whole composition. Capped against both axes so a
+     wide-but-short screen can't drop him past the bottom edge. */
+  --figure-w: clamp(190px, min(17vw, 26vh), 280px);
+  --figure-ratio: 1.972; /* drop-character.png is 542x1069 */
+  --web-h: 88px;
+  /* The strand drawn inside drop-character.png is not centred in the file: it
+     runs 7.82% of the image width right of centre. The CSS web has to match it
+     or the thread visibly kinks where the two meet. */
+  --web-offset: 0.0782;
+  /* Half-gap between the card and the figure, measured from screen centre. */
+  --pair-gap: 80px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,8 +42,9 @@ html, body {
 .drop-wrap {
   position: absolute;
   top: 0;
-  right: 12%;
-  width: 180px;
+  left: 50%;
+  margin-left: calc(var(--pair-gap) * 0.25);
+  width: var(--figure-w);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,12 +62,14 @@ html, body {
 
 .web {
   width: 2px;
-  height: 72px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(235, 235, 235, 0.95));
+  height: var(--web-h);
+  /* Line the CSS thread up with the painted one so they read as one strand. */
+  transform: translateX(calc(var(--figure-w) * var(--web-offset)));
+  background: linear-gradient(180deg, rgba(226, 226, 226, 0.04), rgba(226, 226, 226, 0.8));
 }
 
 .drop-character {
-  width: 160px;
+  width: 100%;
   height: auto;
   display: block;
   -webkit-user-drag: none;
@@ -61,10 +78,13 @@ html, body {
 
 .card {
   position: absolute;
-  top: 28%;
-  left: 10%;
-  min-width: 280px;
-  max-width: min(420px, 70vw);
+  /* Anchored to the same origin as the figure (not a % of viewport height) so
+     the pair stays grouped on any screen. Sits level with his torso. */
+  top: calc(var(--web-h) + var(--figure-w) * var(--figure-ratio) * 0.5);
+  right: 50%;
+  margin-right: var(--pair-gap);
+  min-width: 260px;
+  max-width: min(380px, 46vw);
   padding: 18px 22px 20px;
   background:
     repeating-linear-gradient(
