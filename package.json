@@ -1,7 +1,7 @@
 {
   "name": "spider-water-reminder",
   "productName": "SpiderWaterReminder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SpiderWaterReminder — satisfying water reminders with every drop",
   "main": "electron/main.js",
   "author": "Rasel Islam",
