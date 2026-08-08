@@ -565,21 +565,6 @@ button,
   max-width: 28ch;
 }
 
-.video-wrap {
-  border-radius: 1.4rem;
-  padding: 0.55rem;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-.video-wrap video {
-  width: 100%;
-  border-radius: 1rem;
-  display: block;
-  background: #0c1424;
-}
-
 .note {
   display: grid;
   grid-template-columns: auto 1fr;
